@@ -1,3 +1,4 @@
 export enum services {
 	PRODUCTS_SERVICE = 'PRODUCTS_SERVICE',
+	ORDERS_SERVICE = 'ORDERS_SERVICE',
 }
