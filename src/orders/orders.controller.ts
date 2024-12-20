@@ -17,13 +17,13 @@ import { OrderPaginationDto, CreateOrderDto, StatusOrderDto } from './dto';
 @Controller('orders')
 export class OrdersController {
 	constructor(
-		@Inject(services.ORDERS_SERVICE)
-		private readonly ordersClient: ClientProxy,
+		@Inject(services.NATS_SERVICE)
+		private readonly client: ClientProxy,
 	) {}
 
 	@Post()
 	create(@Body() request: CreateOrderDto) {
-		return this.ordersClient.send('create', request).pipe(
+		return this.client.send('create', request).pipe(
 			catchError((err) => {
 				throw new RpcException(err);
 			}),
@@ -32,7 +32,7 @@ export class OrdersController {
 
 	@Get()
 	findAll(@Query() pagination: OrderPaginationDto) {
-		return this.ordersClient.send('findAll', pagination).pipe(
+		return this.client.send('findAll', pagination).pipe(
 			catchError((err) => {
 				throw new RpcException(err);
 			}),
@@ -41,7 +41,7 @@ export class OrdersController {
 
 	@Get(':id')
 	findOne(@Param('id', ParseUUIDPipe) id: string) {
-		return this.ordersClient.send('findOne', { id }).pipe(
+		return this.client.send('findOne', { id }).pipe(
 			catchError((err) => {
 				throw new RpcException(err);
 			}),
@@ -53,7 +53,7 @@ export class OrdersController {
 		@Param('id', ParseUUIDPipe) id: string,
 		@Body() request: StatusOrderDto,
 	) {
-		return this.ordersClient
+		return this.client
 			.send('changeStatus', { id, status: request.status })
 			.pipe(
 				catchError((err) => {

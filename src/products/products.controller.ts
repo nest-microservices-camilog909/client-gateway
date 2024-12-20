@@ -20,20 +20,20 @@ import { UpdateProductDto } from './dto/update-product.dto';
 @Controller('products')
 export class ProductsController {
 	constructor(
-		@Inject(services.PRODUCTS_SERVICE)
-		private readonly productsClient: ClientProxy,
+		@Inject(services.NATS_SERVICE)
+		private readonly client: ClientProxy,
 	) {}
 
 	@Get()
 	findAllProducts(@Query() request: PaginationDto) {
-		return this.productsClient.send({ cmd: 'find_all' }, request);
+		return this.client.send({ cmd: 'find_all' }, request);
 	}
 
 	@Get(':id')
 	async findProduct(@Param('id', ParseIntPipe) id: number) {
 		try {
 			const product = await firstValueFrom(
-				this.productsClient.send({ cmd: 'find_one' }, { id }),
+				this.client.send({ cmd: 'find_one' }, { id }),
 			);
 
 			return product;
@@ -42,7 +42,7 @@ export class ProductsController {
 		}
 
 		// THROW ERROR WITH PIPE (OPTION B)
-		// return this.productsClient.send({ cmd: 'find_one' }, { id }).pipe(
+		// return this.client.send({ cmd: 'find_one' }, { id }).pipe(
 		// 	catchError((err) => {
 		// 		throw new RpcException(err);
 		// 	}),
@@ -53,7 +53,7 @@ export class ProductsController {
 	async createProduct(@Body() request: CreateProductDto) {
 		try {
 			return await firstValueFrom(
-				this.productsClient.send({ cmd: 'create' }, request),
+				this.client.send({ cmd: 'create' }, request),
 			);
 		} catch (e) {
 			throw new RpcException(e);
@@ -67,7 +67,7 @@ export class ProductsController {
 	) {
 		try {
 			return await firstValueFrom(
-				this.productsClient.send({ cmd: 'update' }, { ...request, id }),
+				this.client.send({ cmd: 'update' }, { ...request, id }),
 			);
 		} catch (e) {
 			throw new RpcException(e);
@@ -78,7 +78,7 @@ export class ProductsController {
 	async deleteProduct(@Param('id', ParseIntPipe) id: number) {
 		try {
 			return await firstValueFrom(
-				this.productsClient.send({ cmd: 'delete' }, { id }),
+				this.client.send({ cmd: 'delete' }, { id }),
 			);
 		} catch (e) {
 			throw new RpcException(e);
