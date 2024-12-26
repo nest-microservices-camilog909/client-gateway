@@ -11,7 +11,7 @@ import {
 	Query,
 } from '@nestjs/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { firstValueFrom } from 'rxjs';
+import { catchError, firstValueFrom } from 'rxjs';
 import { PaginationDto } from 'src/common';
 import { services } from 'src/config';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -26,7 +26,11 @@ export class ProductsController {
 
 	@Get()
 	findAllProducts(@Query() request: PaginationDto) {
-		return this.client.send({ cmd: 'find_all' }, request);
+		return this.client.send({ cmd: 'find_all' }, request).pipe(
+			catchError((err) => {
+				throw new RpcException(err);
+			}),
+		);
 	}
 
 	@Get(':id')
@@ -52,9 +56,7 @@ export class ProductsController {
 	@Post()
 	async createProduct(@Body() request: CreateProductDto) {
 		try {
-			return await firstValueFrom(
-				this.client.send({ cmd: 'create' }, request),
-			);
+			return await firstValueFrom(this.client.send({ cmd: 'create' }, request));
 		} catch (e) {
 			throw new RpcException(e);
 		}
@@ -77,9 +79,7 @@ export class ProductsController {
 	@Delete(':id')
 	async deleteProduct(@Param('id', ParseIntPipe) id: number) {
 		try {
-			return await firstValueFrom(
-				this.client.send({ cmd: 'delete' }, { id }),
-			);
+			return await firstValueFrom(this.client.send({ cmd: 'delete' }, { id }));
 		} catch (e) {
 			throw new RpcException(e);
 		}
